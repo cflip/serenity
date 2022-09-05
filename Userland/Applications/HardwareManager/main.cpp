@@ -7,17 +7,7 @@
 #include <LibMain/Main.h>
 
 #include "HardwareListModel.h"
-
-class PropertiesWindow final : public GUI::Window {
-    C_OBJECT(PropertiesWindow);
-
-public:
-    virtual ~PropertiesWindow() override = default;
-
-private:
-    PropertiesWindow(DeviceInfo, Window* = nullptr)
-    {}
-};
+#include "PropertiesWindow.h"
 
 ErrorOr<int> serenity_main(Main::Arguments arguments)
 {
@@ -44,11 +34,11 @@ ErrorOr<int> serenity_main(Main::Arguments arguments)
 
         auto device_info = static_cast<HardwareListNode&>(node).device_info();
 
-        RefPtr<PropertiesWindow> properties_window = window->add<PropertiesWindow>(device_info);
+        RefPtr<PropertiesWindow> properties_window = window->add<PropertiesWindow>(device_info, window);
         properties_window->set_title("PCI Device Properties");
         properties_window->resize(360, 420);
         properties_window->center_on_screen();
-        properties_window->set_resizable(false);
+        //properties_window->set_resizable(false);
         properties_window->show();
     });
 

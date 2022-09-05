@@ -2,14 +2,7 @@
 
 #include <AK/Types.h>
 #include <LibGUI/TreeViewModel.h>
-
-struct DeviceInfo {
-    unsigned vendor_id;
-    unsigned device_id;
-    unsigned class_id;
-    unsigned subclass_id;
-    unsigned revision;
-};
+#include "DeviceInfo.h"
 
 class HardwareListNode final : public GUI::TreeViewModel::Node {
 public:

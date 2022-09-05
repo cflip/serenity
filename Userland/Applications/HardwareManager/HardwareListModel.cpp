@@ -6,13 +6,6 @@
 #include <LibCore/File.h>
 #include <LibPCIDB/Database.h>
 
-static u32 read_hex_string_from_bytebuffer(ByteBuffer const& buf)
-{
-    // FIXME: Propagate errors.
-    return AK::StringUtils::convert_to_uint_from_hex(
-        String(MUST(buf.slice(2, buf.size() - 2)).bytes()))
-        .release_value();
-}
 
 static HashMap<u32, Vector<DeviceInfo>> get_device_info_by_class()
 {
@@ -26,26 +19,16 @@ static HashMap<u32, Vector<DeviceInfo>> get_device_info_by_class()
     while (di.has_next()) {
         auto dir = di.next_path();
 
-        const auto read_property_from_file = [](String dir, String property_name) -> u32 {
-            auto id_file = Core::File::construct(String::formatted("/sys/bus/pci/{}/{}", dir, property_name));
-            if (!id_file->open(Core::OpenMode::ReadOnly)) {
-                dbgln("Error: Could not open {}: {}", id_file->name(), id_file->error_string());
-            }
-            return read_hex_string_from_bytebuffer(id_file->read_all());
-        };
+		auto device_info_or_error = DeviceInfo::from_directory(dir);
+		if (device_info_or_error.is_error())
+			continue;
+		auto device_info = device_info_or_error.value();
 
-        u32 vendor_id = read_property_from_file(dir, "vendor");
-        u32 device_id = read_property_from_file(dir, "device_id");
-        u32 class_id = read_property_from_file(dir, "class");
-        u32 subclass_id = read_property_from_file(dir, "subclass");
-        u32 revision_id = read_property_from_file(dir, "revision");
-
-		DeviceInfo device_info = { vendor_id, device_id, class_id, subclass_id, revision_id };
-		auto device_info_for_this_class = device_info_by_class.get(class_id);
+		auto device_info_for_this_class = device_info_by_class.get(device_info.class_id);
 		if (device_info_for_this_class.has_value()) {
 			device_info_for_this_class.value().empend(device_info);
 		} else {
-			device_info_by_class.set(class_id, { device_info });
+			device_info_by_class.set(device_info.class_id, { device_info });
 		}
     }
 
