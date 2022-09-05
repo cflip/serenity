@@ -60,6 +60,25 @@
                 }
 
                 @GUI::Label {
+                    text: "Subclass:"
+                    text_alignment: "CenterLeft"
+                    fixed_width: 80
+                }
+
+                @GUI::Label {
+                    name: "subclass"
+                    text: ""
+                    text_alignment: "CenterLeft"
+                }
+            }
+
+            @GUI::Widget {
+                fixed_height: 14
+                layout: @GUI::HorizontalBoxLayout {
+                    spacing: 12
+                }
+
+                @GUI::Label {
                     text: "Vendor:"
                     text_alignment: "CenterLeft"
                     fixed_width: 80
@@ -117,7 +136,7 @@
                 }
 
                 @GUI::TableView {
-                    name: "resource-table-view"
+                    name: "resource_table_view"
                 }
             }
         }

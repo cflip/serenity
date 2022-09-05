@@ -19,6 +19,7 @@ struct DeviceInfo {
 		u32 device;
 		u32 function;
 	} location;
+	u32 bars[6];
 
 	static ErrorOr<DeviceInfo> from_directory(String dir);
 };

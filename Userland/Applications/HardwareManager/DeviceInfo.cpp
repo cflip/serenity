@@ -22,7 +22,7 @@ static u32 convert_sysfs_value_to_uint(String const& value)
 
 ErrorOr<DeviceInfo> DeviceInfo::from_directory(String dir)
 {
-    const auto read_property_from_file = [dir](String property_name) -> ErrorOr<u32> {
+    const auto read_property_from_file = [dir](String property_name) -> unsigned int {
         auto id_file = Core::File::construct(String::formatted("/sys/bus/pci/{}/{}", dir, property_name));
         if (!id_file->open(Core::OpenMode::ReadOnly)) {
             dbgln("Error: Could not open {}: {}", id_file->name(), id_file->error_string());
@@ -39,23 +39,19 @@ ErrorOr<DeviceInfo> DeviceInfo::from_directory(String dir)
     device_info.location.bus = convert_sysfs_value_to_uint(domain_bus_device_parts[1]);
     device_info.location.device = convert_sysfs_value_to_uint(domain_bus_device_parts[2].split('.')[0]);
 
-    u32 vendor_id = TRY(read_property_from_file("vendor"));
-    u32 device_id = TRY(read_property_from_file("device_id"));
-    u32 subvendor_id = TRY(read_property_from_file("subsystem_vendor"));
-    u32 subdevice_id = TRY(read_property_from_file("subsystem_id"));
-    u32 class_id = TRY(read_property_from_file("class"));
-    u32 subclass_id = TRY(read_property_from_file("subclass"));
-    u32 programming_interface_id = TRY(read_property_from_file("progif"));
-    u32 revision_id = TRY(read_property_from_file("revision"));
+    device_info.vendor_id = static_cast<u16>(read_property_from_file("vendor"));
+    device_info.device_id = static_cast<u16>(read_property_from_file("device_id"));
+    device_info.subvendor_id = static_cast<u16>(read_property_from_file("subsystem_vendor"));
+    device_info.subdevice_id = static_cast<u16>(read_property_from_file("subsystem_id"));
+    device_info.class_id = static_cast<u8>(read_property_from_file("class"));
+    device_info.subclass_id = static_cast<u8>(read_property_from_file("subclass"));
+    device_info.programming_interface_id = static_cast<u8>(read_property_from_file("progif"));
+    device_info.revision_id = static_cast<u8>(read_property_from_file("revision"));
 
-	device_info.vendor_id = static_cast<u16>(vendor_id);
-	device_info.device_id = static_cast<u16>(device_id);
-	device_info.subvendor_id = static_cast<u16>(subvendor_id);
-	device_info.subdevice_id = static_cast<u16>(subdevice_id);
-	device_info.class_id = static_cast<u8>(class_id);
-	device_info.subclass_id = static_cast<u8>(subclass_id);
-	device_info.programming_interface_id = static_cast<u8>(programming_interface_id);
-	device_info.revision_id = static_cast<u8>(revision_id);
+    for (size_t bar_index = 0; bar_index < 6; bar_index++) {
+        u32 bar_value = read_property_from_file(String::formatted("bar{}", bar_index));
+        device_info.bars[bar_index] = bar_value;
+    }
 
 	return device_info;
 }
